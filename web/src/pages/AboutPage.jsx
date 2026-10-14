@@ -14,10 +14,14 @@ export default function AboutPage() {
   return (
     <>
       <Seo
-        title="About us"
-        description={`About ${BRAND.fullName}.`}
+        title="About Us — Sree Aadhityaa Integrated Healthcare"
+        description="Learn about Sree Aadhityaa Integrated Siddha and Dental Healthcare. Our mission, values, clinical specializations, and experienced team of doctors in Tamil Nadu."
         path="/about"
         image="/og-main.png"
+        breadcrumbs={[
+          { name: "Home", path: "/" },
+          { name: "About Us", path: "/about" },
+        ]}
       />
       <PageHero eyebrow="About" title={about.title} />
       <Section>

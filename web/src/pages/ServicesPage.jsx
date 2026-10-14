@@ -23,12 +23,21 @@ export default function ServicesPage({ practice }) {
     );
   }, [q.data, term]);
 
+    const isDental = practice === "dental";
+  const breadcrumbs = [
+    { name: "Home", path: "/" },
+    { name: p.shortName, path: p.path },
+    { name: "Treatments", path: p.servicesPath },
+  ];
+
   return (
     <>
       <Seo
-        title={`${practice === "dental" ? "Dental" : "Siddha"} treatments`}
-        description={`Treatments offered at ${p.name}.`}
+        title={`${isDental ? "Dental Treatments & Services" : "Siddha Treatments & Therapies"} — ${p.shortName}`}
+        description={`Explore complete ${isDental ? "dental check-ups, root canal, teeth whitening, orthodontics, and cosmetic dental treatments" : "classical Siddha treatments, Varma therapies, pediatric care, and spine and joint remedies"} at ${p.name}.`}
         path={p.servicesPath}
+        keywords={isDental ? "dental treatments, root canal, teeth whitening, braces, orthodontics, dental clinic Gobichettipalayam" : "Siddha treatments, Varma therapy, pediatric Siddha, joint pain, spine treatment, herbal medicine Tamil Nadu"}
+        breadcrumbs={breadcrumbs}
       />
       <PageHero
         tone={practice}

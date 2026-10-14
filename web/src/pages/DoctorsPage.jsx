@@ -7,6 +7,7 @@ import Seo from "../components/ui/Seo";
 import { DemoNotice, EmptyState } from "../components/ui/States";
 import { toneFor } from "../config/theme";
 import { useDoctors } from "../hooks/useCatalog";
+import { generateDoctorSchema } from "../utils/seoSchemas";
 
 const FILTERS = [
   { key: "", label: "All doctors" },
@@ -20,13 +21,20 @@ export default function DoctorsPage() {
     ? params.get("practice")
     : "";
   const q = useDoctors(practice || undefined);
+  const doctorSchemas = (q.data || []).map((doc) => generateDoctorSchema(doc)).filter(Boolean);
 
   return (
     <>
       <Seo
-        title="Our doctors"
-        description={`Meet the doctors at ${BRAND.fullName}.`}
+        title="Our Doctors & Medical Specialists — Siddha & Dental Healthcare"
+        description="Meet our team of experienced Siddha physicians and dental surgeons led by Dr. M. S. Rajamohan MD (Siddha) NIS at Sree Aadhityaa Healthcare."
         path="/doctors"
+        keywords="Siddha doctors Tamil Nadu, Dr. M. S. Rajamohan, dental surgeons Gobichettipalayam, dentist Erode, pediatric Siddha specialist, authentic Siddha doctor appointment"
+        breadcrumbs={[
+          { name: "Home", path: "/" },
+          { name: "Our Doctors", path: "/doctors" },
+        ]}
+        schema={doctorSchemas}
       />
       <PageHero
         eyebrow="Our team"

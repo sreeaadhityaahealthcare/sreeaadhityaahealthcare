@@ -1,9 +1,14 @@
+# Robots.txt for Sree Aadhityaa Integrated Siddha and Dental Healthcare
 User-agent: *
 Allow: /
+
+# Disallow private user/transactional pages
 Disallow: /cart
 Disallow: /checkout
 Disallow: /order-success
 Disallow: /orders
+Disallow: /order-status
+Disallow: /track-order
 
-# Replace with the production domain once known:
-# Sitemap: https://www.example.com/sitemap.xml
+# XML Sitemap
+Sitemap: https://sreeaadhityaahealthcare.com/sitemap.xml

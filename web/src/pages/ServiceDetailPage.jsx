@@ -10,6 +10,7 @@ import { ErrorState, PageSkeleton } from '../components/ui/States';
 import { PRACTICES } from '../config/site';
 import { toneFor } from '../config/theme';
 import { useDoctors, useService, useServices } from '../hooks/useCatalog';
+import { generateServiceSchema } from '../utils/seoSchemas';
 import NotFoundPage from './NotFoundPage';
 
 export default function ServiceDetailPage({ practice }) {
@@ -28,9 +29,23 @@ export default function ServiceDetailPage({ practice }) {
   const doctors = (doctorsQ.data || []).filter((d) => !s.doctorIds?.length || s.doctorIds.includes(d.id)).slice(0, 4);
   const related = (servicesQ.data || []).filter((x) => x.id !== s.id).slice(0, 3);
 
+  const serviceSchema = generateServiceSchema(s, practice);
+  const breadcrumbs = [
+    { name: p.shortName, path: p.path },
+    { name: 'Treatments', path: p.servicesPath },
+    { name: s.name, path: `${p.servicesPath}/${s.slug}` },
+  ];
+
   return (
     <>
-      <Seo title={s.seoTitle || `${s.name} — ${p.shortName}`} description={s.seoDescription || s.shortDescription} path={`${p.servicesPath}/${s.slug}`} image={s.image} />
+      <Seo
+        title={s.seoTitle || `${s.name} — ${p.shortName}`}
+        description={s.seoDescription || s.shortDescription}
+        path={`${p.servicesPath}/${s.slug}`}
+        image={s.image}
+        breadcrumbs={breadcrumbs}
+        schema={serviceSchema ? [serviceSchema] : []}
+      />
 
       <div className={`border-b ${t.softBorder} ${t.soft}`}>
         <div className="container-page py-10">

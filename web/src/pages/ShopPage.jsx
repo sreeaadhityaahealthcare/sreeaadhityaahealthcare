@@ -57,12 +57,18 @@ export default function ShopPage() {
   return (
     <>
       <Seo
-        title={category ? `${category.name} — Shop` : "Siddha store"}
+        title={category ? `${category.name} — Siddha Herbal Store` : "Siddha & Herbal Store"}
         description={
           category?.description ||
-          "Herbal and Siddha products from Shree Aadhitya Siddha Hospital."
+          "Authentic classical Siddha formulations, herbal cosmetics, and wellness products from Shree Aadhitya Siddha Hospital. Order online across India."
         }
         path={slug ? `/shop/category/${slug}` : "/shop"}
+        keywords="Siddha store online, herbal medicine buy, Siddha oil, herbal powder, Dr. M. S. Rajamohan medicines, natural cosmetics Tamil Nadu, traditional wellness products"
+        breadcrumbs={[
+          { name: "Home", path: "/" },
+          { name: "Shop", path: "/shop" },
+          ...(category ? [{ name: category.name, path: `/shop/category/${category.slug}` }] : []),
+        ]}
       />
       <PageHero
         tone="ayurveda"

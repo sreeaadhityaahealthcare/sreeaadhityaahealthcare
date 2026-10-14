@@ -102,6 +102,7 @@ export default function OrderStatusPage() {
         title="Check Order Status"
         description="Check your Siddha store order status and delivery updates."
         path="/order-status"
+        noindex
       />
 
       <PageHero

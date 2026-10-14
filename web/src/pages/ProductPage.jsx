@@ -12,6 +12,7 @@ import { useCart } from '../contexts/CartContext';
 import { useSite } from '../contexts/SiteContext';
 import { useToast } from '../contexts/ToastContext';
 import { useCategories, useProduct, useProducts } from '../hooks/useCatalog';
+import { generateProductSchema } from '../utils/seoSchemas';
 import NotFoundPage from './NotFoundPage';
 
 export default function ProductPage() {
@@ -45,9 +46,24 @@ export default function ProductPage() {
     buyNow ? openCart() : toast.success(res.message);
   };
 
+    const breadcrumbs = [
+    { name: 'Shop', path: '/shop' },
+    ...(category ? [{ name: category.name, path: `/shop/category/${category.slug}` }] : []),
+    { name: p.name, path: `/shop/product/${p.slug}` },
+  ];
+  const productSchema = generateProductSchema(p);
+
   return (
     <>
-      <Seo title={p.name} description={p.shortDescription} path={`/shop/product/${p.slug}`} image={p.images?.[0]} />
+      <Seo
+        title={p.name}
+        description={p.shortDescription || `Buy authentic ${p.name} online from Sree Aadhityaa Siddha store.`}
+        path={`/shop/product/${p.slug}`}
+        image={p.images?.[0]}
+        type="product"
+        breadcrumbs={breadcrumbs}
+        schema={productSchema ? [productSchema] : []}
+      />
       <div className="container-page py-8">
         <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-1.5 text-sm text-ink-500">
           <Link to="/shop" className="hover:underline">Shop</Link>

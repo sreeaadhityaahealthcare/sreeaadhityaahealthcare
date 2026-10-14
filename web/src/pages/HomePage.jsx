@@ -14,16 +14,22 @@ import ContactSection from "../components/common/ContactSection";
 import { BRAND } from "../config/site";
 import Seo from "../components/ui/Seo";
 import { useSite } from "../contexts/SiteContext";
+import { generateClinicSchema, generateWebSiteSchema } from "../utils/seoSchemas";
 
 export default function HomePage() {
-  const { content } = useSite();
+  const { content, settings } = useSite();
   const cta = content.main.appointmentCta;
+  const clinicSchema = generateClinicSchema(settings);
+  const websiteSchema = generateWebSiteSchema();
+
   return (
     <>
       <Seo
-        description={`${BRAND.fullName} — book appointments online, explore Siddha and dental treatments and shop Siddha products.`}
+        title="Integrated Siddha & Dental Healthcare"
+        description="Sree Aadhityaa Integrated Healthcare — Expert Siddha treatments led by Dr. M. S. Rajamohan MD (Siddha) NIS, advanced dental care, online doctor appointments, and authentic Siddha herbal products."
         path="/"
         image="/og-main.png"
+        schema={[clinicSchema, websiteSchema]}
       />
       <HomeHero />
       <PracticeSelection />

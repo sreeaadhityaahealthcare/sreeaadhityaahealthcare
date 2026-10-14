@@ -87,7 +87,16 @@ function EnquiryForm() {
 export default function ContactPage() {
   return (
     <>
-      <Seo title="Contact us" description={`Contact ${BRAND.fullName}.`} path="/contact" />
+      <Seo
+        title="Contact Us & Clinic Location — Siddha & Dental Healthcare"
+        description={`Get in touch with ${BRAND.fullName}. Phone: +91 94432 23456. Visit our clinic in Tamil Nadu for consultations, dental treatments, and enquiries.`}
+        path="/contact"
+        keywords="Contact Sree Aadhityaa, clinic phone number, Siddha clinic address, dentist contact Gobichettipalayam, appointment enquiry"
+        breadcrumbs={[
+          { name: "Home", path: "/" },
+          { name: "Contact Us", path: "/contact" },
+        ]}
+      />
       <PageHero eyebrow="Contact" title="We’d love to hear from you" description="Send us an enquiry, or call or message us directly. For appointments, please use the booking form." />
       <Section>
         <div className="mx-auto max-w-2xl">

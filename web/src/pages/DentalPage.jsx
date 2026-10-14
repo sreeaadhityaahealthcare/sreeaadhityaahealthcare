@@ -15,6 +15,7 @@ import {
 import { Section, SectionHeading } from "../components/ui/Section";
 import Seo from "../components/ui/Seo";
 import { useSite } from "../contexts/SiteContext";
+import { generateFaqSchema } from "../utils/seoSchemas";
 
 function Facilities() {
   const { content } = useSite();
@@ -67,13 +68,24 @@ function Facilities() {
 
 export default function DentalPage() {
   const { content } = useSite();
+  const faqSchema = generateFaqSchema(content.dental?.faqs);
+
   return (
     <>
       <Seo
-        title="Dental Hospital"
-        description={content.dental.hero.subtitle}
+        title="Dental Hospital — Gentle, Modern Dental Care & Orthodontics"
+        description={
+          content.dental.hero.subtitle ||
+          "Shree Aadhitya Dental Hospital — Modern, painless dental clinic for children and adults. Check-ups, root canal, teeth whitening, orthodontics, and cosmetic dentistry."
+        }
         path="/dental"
         image="/og-dental.png"
+        keywords="Dental hospital Gobichettipalayam, dental clinic Erode, root canal treatment, dental implants, teeth cleaning, orthodontics, braces, teeth whitening, pediatric dentist Tamil Nadu"
+        breadcrumbs={[
+          { name: "Home", path: "/" },
+          { name: "Dental Hospital", path: "/dental" },
+        ]}
+        schema={faqSchema ? [faqSchema] : []}
       />
       <PracticeHero practice="dental" />
       <PracticeAbout practice="dental" />
