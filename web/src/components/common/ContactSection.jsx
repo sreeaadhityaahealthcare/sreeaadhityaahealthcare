@@ -28,6 +28,10 @@ export default function ContactSection({ practice, id = 'contact', muted = false
   const tone = practice || 'main';
   const title = practice ? PRACTICES[practice].name : BRAND.fullName;
 
+  const defaultMapUrl =
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1920.3434634993496!2d77.24737390410193!3d11.506699337689767!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba921000e590461%3A0xab17af8357a938c1!2sSree%20Aadithya%20Siddha%20Medical%20and%20Dental%20Care%20Centre!5e0!3m2!1sen!2sin!4v1791982499148!5m2!1sen!2sin";
+  const activeMapUrl = c.mapUrl || defaultMapUrl;
+
   return (
     <Section id={id} muted={muted} tone={practice}>
       <SectionHeading tone={tone} eyebrow="Contact" title="Visit or get in touch" description={title} />
@@ -54,8 +58,15 @@ export default function ContactSection({ practice, id = 'contact', muted = false
         </div>
 
         <div className="min-h-64 overflow-hidden rounded-xl border border-ink-200 bg-ink-50">
-          {c.mapUrl ? (
-            <iframe title={`Map showing ${title}`} src={c.mapUrl} className="h-full min-h-72 w-full border-0" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+          {activeMapUrl ? (
+            <iframe
+              title={`Map showing ${title}`}
+              src={activeMapUrl}
+              className="h-full min-h-72 w-full border-0"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
           ) : (
             <div className="flex h-full min-h-72 flex-col items-center justify-center gap-2 p-6 text-center text-ink-500">
               <MapPin className="size-8" aria-hidden="true" />

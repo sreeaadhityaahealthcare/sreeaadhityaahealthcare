@@ -50,9 +50,9 @@ function getHeroSlides(content) {
       subtitle:
         mainHero.subtitle ||
         "Integrated Siddha and Dental care under one trusted roof, with online appointments and authentic herbal wellness products.",
-      image: mainHero.image || "/home-hero.png",
-      alt: "Sree Aadhityaa Integrated Siddha and Dental Healthcare hospital entrance and clinical suites",
-      badgeText: "Integrated Holistic & Dental Care",
+      image: mainHero.image || "/icons/logo-main.jpeg",
+      bgImage: "/og-main.png",
+      alt: "Sree Aadhityaa Integrated Siddha and Dental Healthcare",
       highlights: [
         "Root-Cause Siddha Therapies",
         "Advanced Multispeciality Dentistry",
@@ -68,9 +68,9 @@ function getHeroSlides(content) {
         label: "About Us",
         tone: "main",
       },
-      pillBg: "bg-ink-900 text-white shadow-md shadow-ink-950/20",
-      pillInactive: "text-ink-700 hover:bg-ink-100/70",
-      badgeStyle: "bg-ink-100 text-ink-900 border-ink-200",
+      pillBg: "bg-white !text-ink-950 font-bold shadow-md",
+      pillInactive: "text-white/80 hover:bg-white/10 hover:text-white",
+      badgeStyle: "border-white/20 bg-white/10 text-white",
       gradientAura: "from-ink-600/10 via-ink-500/5 to-transparent",
     },
     {
@@ -83,8 +83,8 @@ function getHeroSlides(content) {
         ayurHero.subtitle ||
         "Personalised consultations with Siddha physicians, authentic traditional therapies, and time-tested herbal remedies in a tranquil clinical setting.",
       image: ayurHero.image || "/icons/logo-siddha.jpeg",
+      bgImage: "/og-ayurveda.png",
       alt: "Shree Aadhitya Siddha Hospital official healthcare emblem",
-      badgeText: "Authentic Holistic Care",
       highlights: [
         "Physician-Guided Therapies",
         "Traditional Healing Programmes",
@@ -100,9 +100,9 @@ function getHeroSlides(content) {
         label: "Book Appointment",
         tone: "ayurveda",
       },
-      pillBg: "bg-ayur-700 text-white shadow-md shadow-ayur-900/20",
-      pillInactive: "text-ink-700 hover:bg-ayur-100/70",
-      badgeStyle: "bg-ayur-100 text-ayur-800 border-ayur-200",
+      pillBg: "bg-ayur-600 text-white shadow-md",
+      pillInactive: "text-white/80 hover:bg-white/10 hover:text-white",
+      badgeStyle: "border-emerald-400/30 bg-emerald-950/40 text-emerald-200",
       gradientAura: "from-ayur-600/10 via-ayur-500/5 to-transparent",
     },
     {
@@ -115,8 +115,8 @@ function getHeroSlides(content) {
         dentalHero.subtitle ||
         "Comprehensive dental healthcare from routine preventive check-ups and gentle root canals to cosmetic smile design and implants in a spotless environment.",
       image: dentalHero.image || "/icons/logo-dental.jpeg",
+      bgImage: "/og-dental.png",
       alt: "Shree Aadhitya Dental Hospital official healthcare emblem",
-      badgeText: "Modern Advanced Clinic",
       highlights: [
         "Rigorous Multi-Step Sterilisation",
         "Child-Friendly Dental Care",
@@ -132,9 +132,9 @@ function getHeroSlides(content) {
         label: "Book Appointment",
         tone: "dental",
       },
-      pillBg: "bg-dental-600 text-white shadow-md shadow-dental-900/20",
-      pillInactive: "text-ink-700 hover:bg-dental-100/70",
-      badgeStyle: "bg-dental-100 text-dental-800 border-dental-200",
+      pillBg: "bg-dental-600 text-white shadow-md",
+      pillInactive: "text-white/80 hover:bg-white/10 hover:text-white",
+      badgeStyle: "border-sky-400/30 bg-sky-950/40 text-sky-200",
       gradientAura: "from-dental-600/10 via-dental-500/5 to-transparent",
     },
   ];
@@ -199,16 +199,35 @@ export function HomeHero() {
 
   return (
     <section
-      className="relative overflow-hidden bg-sand-100 transition-colors duration-700"
+      className="relative overflow-hidden bg-ink-950 text-white transition-colors duration-700"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       aria-roledescription="carousel"
       aria-label="Care practices overview"
     >
-      {/* Background ambient radial aura */}
+      {/* Background slide images with smooth cross-fade */}
+      {heroSlides.map((slide, idx) => (
+        <img
+          key={slide.id}
+          src={slide.bgImage}
+          alt=""
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-0 size-full object-cover transition-opacity duration-700 ${
+            slide.practice === "dental" ? "-scale-x-100" : ""
+          } ${
+            idx === safeIdx ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
+
+      {/* Luminous background photography with balanced contrast gradient */}
       <div
-        className={`pointer-events-none absolute -top-24 left-1/2 -z-0 h-[520px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-to-b ${activeSlide.gradientAura} blur-3xl transition-all duration-700`}
+        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-black/15"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-black/20"
         aria-hidden="true"
       />
 
@@ -219,11 +238,12 @@ export function HomeHero() {
           <div
             role="tablist"
             aria-label="Practice slides"
-            className="inline-flex w-fit items-center rounded-full border border-ink-200/80 bg-white/80 p-1.5 backdrop-blur-md"
+            className="inline-flex w-fit items-center rounded-full border border-white/25 bg-black/35 p-1.5 backdrop-blur-md"
           >
             {heroSlides.map((slide, idx) => {
               const isActive = idx === safeIdx;
               const TabIcon = getSlideIcon(slide.practice);
+              const isMainActive = isActive && slide.practice === "main";
               return (
                 <button
                   key={slide.id}
@@ -232,13 +252,17 @@ export function HomeHero() {
                   aria-selected={isActive}
                   onClick={() => goToSlide(idx)}
                   className={`relative flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold tracking-wide uppercase transition-all duration-300 sm:px-5 sm:text-sm ${
-                    isActive ? slide.pillBg : slide.pillInactive
+                    isActive ? `${slide.pillBg} ${isMainActive ? "!text-ink-950 font-bold" : "!text-white"}` : slide.pillInactive
                   }`}
                 >
-                  <TabIcon className="size-4 shrink-0" aria-hidden="true" />
-                  <span>{slide.tabLabel}</span>
+                  <TabIcon className={`size-4 shrink-0 ${isMainActive ? "!text-ink-950" : ""}`} aria-hidden="true" />
+                  <span className={isMainActive ? "!text-ink-950 font-bold" : ""}>{slide.tabLabel}</span>
                   {isActive && (
-                    <span className="hidden sm:inline-block size-1.5 rounded-full bg-white/80 animate-pulse" />
+                    <span
+                      className={`hidden sm:inline-block size-1.5 rounded-full ${
+                        isMainActive ? "bg-ink-950" : "bg-white"
+                      } animate-pulse`}
+                    />
                   )}
                 </button>
               );
@@ -250,7 +274,7 @@ export function HomeHero() {
             <button
               type="button"
               onClick={prevSlide}
-              className="flex size-9 items-center justify-center rounded-full border border-ink-200 bg-white/90 text-ink-700 shadow-sm transition hover:bg-white hover:text-ink-900 focus:ring-2 focus:ring-ink-300"
+              className="flex size-9 items-center justify-center rounded-full border border-white/25 bg-black/35 text-white shadow-sm transition hover:bg-white/20 hover:text-white focus:ring-2 focus:ring-white/40"
               aria-label="Previous slide"
             >
               <ChevronLeft className="size-4" aria-hidden="true" />
@@ -258,7 +282,7 @@ export function HomeHero() {
             <button
               type="button"
               onClick={nextSlide}
-              className="flex size-9 items-center justify-center rounded-full border border-ink-200 bg-white/90 text-ink-700 shadow-sm transition hover:bg-white hover:text-ink-900 focus:ring-2 focus:ring-ink-300"
+              className="flex size-9 items-center justify-center rounded-full border border-white/25 bg-black/35 text-white shadow-sm transition hover:bg-white/20 hover:text-white focus:ring-2 focus:ring-white/40"
               aria-label="Next slide"
             >
               <ChevronRight className="size-4" aria-hidden="true" />
@@ -266,17 +290,17 @@ export function HomeHero() {
           </div>
         </div>
 
-        {/* Hero Main Content Grid */}
+        {/* Hero Main Content Grid - Identical min-height to prevent jitter */}
         <div
           key={activeSlide.id}
-          className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14"
+          className="grid items-center gap-10 min-h-[420px] lg:grid-cols-[1.1fr_0.9fr] lg:gap-14"
         >
           {/* Left Text & CTAs */}
           <div className="flex flex-col">
             {/* Eyebrow badge */}
             <div className="mb-4 flex items-center gap-2">
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold tracking-wider uppercase ${activeSlide.badgeStyle}`}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold tracking-wider uppercase backdrop-blur-md ${activeSlide.badgeStyle}`}
               >
                 <Icon className="size-3.5 shrink-0" aria-hidden="true" />
                 {activeSlide.eyebrow}
@@ -284,24 +308,24 @@ export function HomeHero() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-3xl leading-[1.12] font-semibold text-balance text-ink-950 sm:text-4xl lg:text-[2.85rem]">
+            <h1 className="text-3xl leading-[1.12] font-semibold text-balance text-white sm:text-4xl lg:text-[2.85rem] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
               {activeSlide.title}
             </h1>
 
             {/* Subtitle */}
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-700 sm:text-lg">
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-white/95 sm:text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
               {activeSlide.subtitle}
             </p>
 
             {/* Highlight pills */}
-            <ul className="mt-6 flex flex-wrap gap-2.5 text-xs font-medium text-ink-800 sm:text-sm">
+            <ul className="mt-6 flex flex-wrap gap-2.5 text-xs font-medium text-white sm:text-sm">
               {activeSlide.highlights.map((highlight) => (
                 <li
                   key={highlight}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200/70 bg-white/70 px-3 py-1.5 backdrop-blur-sm"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-black/30 px-3 py-1.5 backdrop-blur-md text-white/95"
                 >
                   <Check
-                    className="size-3.5 text-gold-600 shrink-0"
+                    className="size-3.5 text-gold-400 shrink-0"
                     aria-hidden="true"
                   />
                   <span>{highlight}</span>
@@ -327,8 +351,8 @@ export function HomeHero() {
               <Button
                 to={activeSlide.secondaryBtn.to}
                 variant="outline"
-                tone={activeSlide.secondaryBtn.tone}
                 size="lg"
+                className="!border-white/60 !text-white hover:!bg-white/10"
               >
                 <CalendarCheck className="size-4 shrink-0" aria-hidden="true" />
                 {activeSlide.secondaryBtn.label}
@@ -336,93 +360,15 @@ export function HomeHero() {
             </div>
           </div>
 
-          {/* Right Image Display Card */}
-          <div className="relative flex items-center justify-center">
-            <div className="group relative w-full max-w-lg overflow-hidden rounded-3xl border border-white/60 bg-white p-2.5 shadow-xl ring-1 ring-ink-900/5">
-              {activeSlide.practice === "main" ? (
-                <>
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-ink-100">
-                    <img
-                      src={activeSlide.image}
-                      alt={activeSlide.alt}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      loading="eager"
-                    />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/40 via-transparent to-transparent" />
-                  </div>
-
-                  {/* Floating feature badge on main banner */}
-                  <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between rounded-xl border border-white/40 bg-white/90 p-4 shadow-lg backdrop-blur-md">
-                    <div className="flex items-center gap-3">
-                      <span className="flex size-10 items-center justify-center rounded-lg bg-ink-900 text-white">
-                        <Icon className="size-5" aria-hidden="true" />
-                      </span>
-                      <div>
-                        <p className="text-xs font-semibold tracking-wider text-ink-500 uppercase">
-                          {activeSlide.tabLabel}
-                        </p>
-                        <p className="text-sm font-semibold text-ink-900">
-                          {activeSlide.badgeText}
-                        </p>
-                      </div>
-                    </div>
-
-                    <Link
-                      to={activeSlide.primaryBtn.to}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-ink-900 hover:text-ink-700 hover:underline"
-                    >
-                      <span>Learn more</span>
-                      <ArrowRight className="size-3.5" aria-hidden="true" />
-                    </Link>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="relative aspect-square w-full max-w-[360px] mx-auto overflow-hidden rounded-2xl bg-white p-6 sm:p-8 flex items-center justify-center">
-                    <img
-                      src={activeSlide.image}
-                      alt={activeSlide.alt}
-                      className="size-full object-contain drop-shadow-sm transition-transform duration-700 group-hover:scale-105"
-                      loading="eager"
-                    />
-                  </div>
-
-                  {/* Feature badge beneath square logo card */}
-                  <div className="mt-2.5 flex items-center justify-between rounded-xl border border-ink-100 bg-sand-50/90 p-3.5 shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`flex size-10 items-center justify-center rounded-lg ${
-                          activeSlide.practice === "ayurveda"
-                            ? "bg-ayur-700 text-white"
-                            : "bg-dental-600 text-white"
-                        }`}
-                      >
-                        <Icon className="size-5" aria-hidden="true" />
-                      </span>
-                      <div>
-                        <p className="text-xs font-semibold tracking-wider text-ink-500 uppercase">
-                          {activeSlide.tabLabel}
-                        </p>
-                        <p className="text-sm font-semibold text-ink-900">
-                          {activeSlide.badgeText}
-                        </p>
-                      </div>
-                    </div>
-
-                    <Link
-                      to={activeSlide.primaryBtn.to}
-                      className={`inline-flex items-center gap-1 text-xs font-semibold ${
-                        activeSlide.practice === "ayurveda"
-                          ? "text-ayur-700 hover:text-ayur-800"
-                          : "text-dental-700 hover:text-dental-800"
-                      } hover:underline`}
-                    >
-                      <span>Learn more</span>
-                      <ArrowRight className="size-3.5" aria-hidden="true" />
-                    </Link>
-                  </div>
-                </>
-              )}
+          {/* Right Image Display Card - Square, fully rounded circular emblem, zero cropping */}
+          <div className="flex items-center justify-center lg:justify-end">
+            <div className="group relative aspect-square w-full max-w-[340px] sm:max-w-[390px] lg:max-w-[410px] overflow-hidden rounded-full bg-white p-6 sm:p-8 shadow-2xl ring-4 ring-white/30 flex items-center justify-center transition-transform duration-500 hover:scale-[1.02]">
+              <img
+                src={activeSlide.image}
+                alt={activeSlide.alt}
+                className="size-full object-contain rounded-full drop-shadow-xs transition-transform duration-700 group-hover:scale-105"
+                loading="eager"
+              />
             </div>
           </div>
         </div>

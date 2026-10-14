@@ -48,7 +48,8 @@ export const DEFAULT_SETTINGS = {
     email: "contact@sreeaadhityaa.com",
     address: "Sree Aadhityaa Integrated Siddha and Dental Healthcare, Main Road, Coimbatore, Tamil Nadu, India",
     workingHours: "Mon – Sat: 9:00 AM – 7:00 PM, Sun: 9:30 AM – 1:00 PM",
-    mapUrl: "",
+    mapUrl:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1920.3434634993496!2d77.24737390410193!3d11.506699337689767!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba921000e590461%3A0xab17af8357a938c1!2sSree%20Aadithya%20Siddha%20Medical%20and%20Dental%20Care%20Centre!5e0!3m2!1sen!2sin!4v1791982499148!5m2!1sen!2sin",
   },
   social: { instagram: "", facebook: "", youtube: "" },
   currency: "INR",
