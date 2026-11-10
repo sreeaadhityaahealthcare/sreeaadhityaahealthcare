@@ -1,6 +1,6 @@
 import {
-  BarChart3, Boxes, CalendarDays, ClipboardList, FileText, Inbox, LayoutDashboard, Package, Settings, ShieldCheck, ShoppingBag,
-  Stethoscope, Tags, Users,
+  BarChart3, Boxes, CalendarDays, ClipboardList, FileText, Inbox, LayoutDashboard, Package, Pill, Settings, ShieldCheck, ShoppingBag,
+  Stethoscope, Tags, UserCheck, Users,
 } from 'lucide-react';
 
 export const ROLES = {
@@ -34,6 +34,7 @@ const SUPER_ONLY = [ROLES.SUPER];
  */
 export const MODULE_ACCESS = {
   dashboard: ALL,
+  patients: ALL,
   appointments: ALL,
   doctors: ALL,
   services: ALL,
@@ -56,12 +57,13 @@ export const NAV_GROUPS = [
     items: [{ module: 'dashboard', label: 'Dashboard', to: '/', icon: LayoutDashboard, end: true }],
   },
   {
-    title: 'Practice',
+    title: 'Clinical Practice',
     items: [
+      { module: 'patients', label: 'Patients & OPD', to: '/patients', icon: UserCheck },
       { module: 'appointments', label: 'Appointments', to: '/appointments', icon: CalendarDays },
       { module: 'doctors', label: 'Doctors', to: '/doctors', icon: Stethoscope },
       { module: 'services', label: 'Services / Treatments', to: '/services', icon: ClipboardList },
-      { module: 'people', label: 'Customers / Patients', to: '/people', icon: Users },
+      { module: 'people', label: 'Customers / People', to: '/people', icon: Users },
       { module: 'enquiries', label: 'Enquiries', to: '/enquiries', icon: Inbox },
     ],
   },

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { AlertTriangle, CalendarCheck, CalendarClock, CalendarDays, CheckCircle2, Package, ShoppingBag, ShoppingCart } from 'lucide-react';
+import { AlertTriangle, CalendarCheck, CalendarClock, CalendarDays, CheckCircle2, Package, Phone, ShoppingBag, ShoppingCart, UserCheck } from 'lucide-react';
 import { DEFAULT_SETTINGS } from '../config/constants';
 import { useAuth } from '../contexts/AuthContext';
 import { Card, PageHeader, StatCard } from '../components/ui/DataDisplay';
@@ -36,6 +36,27 @@ export default function DashboardPage() {
         title={`Welcome${profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}`}
         description={practiceScope ? `Showing ${practiceScope === 'dental' ? 'Dental' : 'Siddha'} practice data.` : 'Combined overview across both practices and the store.'}
       />
+
+      {/* Fast OPD Patient Lookup Banner */}
+      <div className="mb-6 rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex size-11 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold shrink-0">
+            <UserCheck className="size-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-ink-900">Outpatient (OPD) Check-in & Patient Database</h3>
+            <p className="text-xs text-ink-600">
+              Lookup by phone number to check Old vs New patient, review clinical history, issue OP tokens, and write prescriptions for Siddha & Dental.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/patients"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-emerald-800 transition whitespace-nowrap"
+        >
+          <Phone className="size-4" /> Open Patient Check-In
+        </Link>
+      </div>
 
       {counts.error && <div className="mb-6 rounded-xl border border-ink-200 bg-white"><ErrorState message={counts.error} onRetry={counts.reload} /></div>}
 

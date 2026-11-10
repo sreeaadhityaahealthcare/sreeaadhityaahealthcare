@@ -103,3 +103,26 @@
   background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.6), transparent);
   animation: shimmer 1.4s infinite;
 }
+
+@media print {
+  aside, header, nav, .print\:hidden {
+    display: none !important;
+  }
+  body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .lg\:pl-64 {
+    padding-left: 0 !important;
+  }
+  #printable-prescription, #printable-op-card {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}

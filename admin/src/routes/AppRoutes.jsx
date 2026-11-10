@@ -8,6 +8,7 @@ import RoleGuard from './RoleGuard';
 
 // Route-level code splitting (Suspense boundary lives in AdminLayout).
 const DashboardPage = lazy(() => import('../pages/DashboardPage'));
+const PatientsPage = lazy(() => import('../pages/PatientsPage'));
 const AppointmentsPage = lazy(() => import('../pages/AppointmentsPage'));
 const DoctorsPage = lazy(() => import('../pages/DoctorsPage'));
 const ServicesPage = lazy(() => import('../pages/ServicesPage'));
@@ -35,6 +36,7 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AdminLayout />}>
           <Route index element={guard('dashboard', <DashboardPage />)} />
+          <Route path="patients" element={guard('patients', <PatientsPage />)} />
           <Route path="appointments" element={guard('appointments', <AppointmentsPage />)} />
           <Route path="doctors" element={guard('doctors', <DoctorsPage />)} />
           <Route path="services" element={guard('services', <ServicesPage />)} />

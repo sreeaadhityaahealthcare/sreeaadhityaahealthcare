@@ -1,21 +1,132 @@
 rules_version = '2';
 
 // =============================================================================
-// Shree Aadhitya Hospitals — Firestore security rules
+// Shree Aadhitya Hospitals — Firestore Security Rules
 //
 // Authorization is role-based and enforced HERE, not just in the React apps.
 // Staff roles live in  users/{uid}.role  and are only writable by a super_admin.
 //
-//   super_admin     : everything
-//   ayurveda_admin  : ayurveda practice data + the Ayurvedic store
-//   dental_admin    : dental practice data only (no store, no orders)
+//   super_admin     : full system access
+//   ayurveda_admin  : ayurveda/siddha practice data, shared both-practice records, and store
+//   dental_admin    : dental practice data, shared both-practice records (no store, no orders)
 //
-// Public visitors can:
-//   - read ACTIVE catalogue/content documents
-//   - create appointments, orders and enquiries (strictly validated, create-only)
-//   - read a single order-tracking document if they know its unguessable ID
-// Public visitors can NEVER list or read appointments, orders, enquiries, users.
 // =============================================================================
+// Assumed Data Models & Schemas
+// =============================================================================
+//
+// Collection: patients
+// Document ID: auto-generated or patient identifier
+// Fields:
+//   - patientId: string (optional, 0-100 chars)
+//   - opNumber: string (required, immutable on update, 2-50 chars)
+//   - name: string (required, 1-100 chars)
+//   - phone: string (required, 10-15 chars)
+//   - alternatePhone: string (optional, 0-20 chars)
+//   - email: string (optional, 0-120 chars)
+//   - gender: string (optional, 0-30 chars)
+//   - age: number or string (optional, 0-150 / 0-10 chars)
+//   - dob: string (optional, 0-40 chars)
+//   - bloodGroup: string (optional, 0-20 chars)
+//   - practiceType: string (required: 'ayurveda' | 'dental' | 'both')
+//   - address: map (optional: street, city, district, state, pincode)
+//   - emergencyContact: map (optional: name, relation, phone)
+//   - medicalHistory: map (optional: allergies, chronicConditions, currentMedications,
+//                          pastSurgeries, habits, dentalHistory, siddhaProfile, notes)
+//   - status: string (required, 1-30 chars)
+//   - totalVisits: number (required, >= 0)
+//   - lastVisitDate: string | timestamp | null (optional)
+//   - createdAt: timestamp (required, immutable on update)
+//   - updatedAt: timestamp (required)
+//   - createdBy: string (required, immutable on update, 1-100 chars)
+//   - updatedBy: string (required, 1-100 chars)
+//
+// Collection: opVisits
+// Document ID: auto-generated
+// Fields:
+//   - patientId: string (required, immutable on update, 1-100 chars)
+//   - opNumber: string (required, immutable on update, 1-50 chars)
+//   - patientName: string (required, 1-100 chars)
+//   - patientPhone: string (required, 10-15 chars)
+//   - patientAge: number or string (optional, 0-150 / 0-10 chars)
+//   - patientGender: string (optional, 0-30 chars)
+//   - practiceType: string (required, immutable on update: 'ayurveda' | 'dental')
+//   - visitDate: string (required, 8-25 chars)
+//   - visitTime: string (optional, 0-25 chars)
+//   - tokenNumber: number (required, >= 1)
+//   - doctorId: string (optional, 0-80 chars)
+//   - doctorName: string (optional, 0-120 chars)
+//   - chiefComplaints: string (optional, 0-3000 chars)
+//   - duration: string (optional, 0-100 chars)
+//   - vitals: map (optional: bp, pulse, temp, weight, height, bmi, rbs, spo2)
+//   - clinicalExamination: string (optional, 0-3000 chars)
+//   - provisionalDiagnosis: string (optional, 0-1000 chars)
+//   - finalDiagnosis: string (optional, 0-1000 chars)
+//   - treatmentGiven: string (optional, 0-3000 chars)
+//   - investigationsOrdered: string | list (optional, <= 2000 chars / <= 50 items)
+//   - prescriptionId: string (optional, 0-100 chars)
+//   - prescriptionItems: list (optional, <= 50 items)
+//   - dietAdvice: string (optional, 0-2000 chars)
+//   - nextFollowUp: string (optional, 0-50 chars)
+//   - consultationFee: number (optional, >= 0)
+//   - paymentStatus: string (optional, 1-30 chars)
+//   - visitStatus: string (optional, 1-30 chars)
+//   - createdAt: timestamp (required, immutable on update)
+//   - updatedAt: timestamp (required)
+//   - createdBy: string (required, immutable on update, 1-100 chars)
+//   - updatedBy: string (required, 1-100 chars)
+//
+// Collection: prescriptions
+// Document ID: auto-generated
+// Fields:
+//   - prescriptionNumber: string (required, immutable on update, 1-60 chars)
+//   - patientId: string (required, immutable on update, 1-100 chars)
+//   - opNumber: string (required, immutable on update, 1-50 chars)
+//   - patientName: string (required, 1-100 chars)
+//   - patientPhone: string (required, 10-15 chars)
+//   - patientAge: number or string (optional, 0-150 / 0-10 chars)
+//   - patientGender: string (optional, 0-30 chars)
+//   - visitId: string (optional, 0-100 chars)
+//   - practiceType: string (required, immutable on update: 'ayurveda' | 'dental')
+//   - doctorId: string (optional, 0-80 chars)
+//   - doctorName: string (optional, 0-120 chars)
+//   - doctorRegNo: string (optional, 0-80 chars)
+//   - doctorQualification: string (optional, 0-120 chars)
+//   - date: string (required, 8-25 chars)
+//   - diagnosis: string (optional, 0-1500 chars)
+//   - vitalsSummary: string | map (optional)
+//   - items: list of medication maps (required, 1-50 items)
+//   - generalAdvice: string (optional, 0-2000 chars)
+//   - followUpDate: string (optional, 0-50 chars)
+//   - createdAt: timestamp (required, immutable on update)
+//   - updatedAt: timestamp (required)
+//   - createdBy: string (required, immutable on update, 1-100 chars)
+//   - updatedBy: string (required, 1-100 chars)
+//
+// Collection: medications
+// Document ID: auto-generated
+// Fields:
+//   - name: string (required, 1-150 chars)
+//   - genericName: string (optional, 0-200 chars)
+//   - practiceType: string (required: 'ayurveda' | 'dental' | 'both')
+//   - type: string (required, 1-60 chars)
+//   - strength: string (optional, 0-60 chars)
+//   - defaultDosage: string (optional, 0-100 chars)
+//   - defaultFrequency: string (optional, 0-60 chars)
+//   - defaultTiming: string (optional, 0-60 chars)
+//   - defaultAnupanam: string (optional, 0-150 chars)
+//   - duration: string (optional, 0-60 chars)
+//   - instructions: string (optional, 0-1000 chars)
+//   - indications: string (optional, 0-1000 chars)
+//   - stockQuantity: number (optional, >= 0)
+//   - unit: string (optional, 0-40 chars)
+//   - active: bool (optional)
+//   - createdAt: timestamp (required, immutable on update)
+//   - updatedAt: timestamp (required)
+//   - createdBy: string (required, immutable on update, 1-100 chars)
+//   - updatedBy: string (required, 1-100 chars)
+//
+// =============================================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -57,6 +168,14 @@ service cloud.firestore {
         || (practice == 'dental' && isDentalAdmin());
     }
 
+    // Access to clinical data that supports shared practice ('ayurveda' | 'dental' | 'both')
+    function canStaffPractice(practice) {
+      return isSuper()
+        || (practice == 'both' && isActiveStaff())
+        || (practice == 'ayurveda' && isAyurAdmin())
+        || (practice == 'dental' && isDentalAdmin());
+    }
+
     // Store (products, categories, orders) belongs to the Ayurvedic practice
     function canStore() {
       return isSuper() || isAyurAdmin();
@@ -77,6 +196,203 @@ service cloud.firestore {
 
     function unchanged(field) {
       return request.resource.data[field] == resource.data[field];
+    }
+
+    // --------------------------------------------------- clinical validators
+    function validAddress(m) {
+      return m is map
+        && m.keys().hasOnly(['street', 'city', 'district', 'state', 'pincode'])
+        && (!('street' in m) || str(m.street, 0, 250))
+        && (!('city' in m) || str(m.city, 0, 100))
+        && (!('district' in m) || str(m.district, 0, 100))
+        && (!('state' in m) || str(m.state, 0, 100))
+        && (!('pincode' in m) || str(m.pincode, 0, 20));
+    }
+
+    function validEmergencyContact(m) {
+      return m is map
+        && m.keys().hasOnly(['name', 'relation', 'phone'])
+        && (!('name' in m) || str(m.name, 0, 100))
+        && (!('relation' in m) || str(m.relation, 0, 50))
+        && (!('phone' in m) || str(m.phone, 0, 25));
+    }
+
+    function validMedicalHistory(m) {
+      return m is map
+        && m.keys().hasOnly([
+          'allergies', 'chronicConditions', 'currentMedications', 'pastSurgeries',
+          'habits', 'dentalHistory', 'siddhaProfile', 'notes'
+        ])
+        && (!('allergies' in m) || (m.allergies is string && m.allergies.size() <= 2000) || (m.allergies is list && m.allergies.size() <= 50))
+        && (!('chronicConditions' in m) || (m.chronicConditions is string && m.chronicConditions.size() <= 2000) || (m.chronicConditions is list && m.chronicConditions.size() <= 50))
+        && (!('currentMedications' in m) || (m.currentMedications is string && m.currentMedications.size() <= 2000) || (m.currentMedications is list && m.currentMedications.size() <= 50))
+        && (!('pastSurgeries' in m) || (m.pastSurgeries is string && m.pastSurgeries.size() <= 2000) || (m.pastSurgeries is list && m.pastSurgeries.size() <= 50))
+        && (!('habits' in m) || (m.habits is string && m.habits.size() <= 2000) || (m.habits is list && m.habits.size() <= 50))
+        && (!('dentalHistory' in m) || (m.dentalHistory is string && m.dentalHistory.size() <= 3000) || (m.dentalHistory is list && m.dentalHistory.size() <= 50))
+        && (!('siddhaProfile' in m) || (m.siddhaProfile is string && m.siddhaProfile.size() <= 3000) || (m.siddhaProfile is list && m.siddhaProfile.size() <= 50))
+        && (!('notes' in m) || str(m.notes, 0, 3000));
+    }
+
+    function validPatient(d) {
+      return d.keys().hasOnly([
+          'patientId', 'opNumber', 'name', 'phone', 'alternatePhone', 'email',
+          'gender', 'age', 'dob', 'bloodGroup', 'practiceType', 'address',
+          'emergencyContact', 'medicalHistory', 'status', 'totalVisits',
+          'lastVisitDate', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy'
+        ])
+        && d.keys().hasAll([
+          'opNumber', 'name', 'phone', 'practiceType', 'status',
+          'totalVisits', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy'
+        ])
+        && (!('patientId' in d) || str(d.patientId, 0, 100))
+        && str(d.opNumber, 2, 50)
+        && str(d.name, 1, 100)
+        && d.phone is string && d.phone.size() >= 10 && d.phone.size() <= 15
+        && (!('alternatePhone' in d) || (d.alternatePhone is string && d.alternatePhone.size() <= 20))
+        && (!('email' in d) || (d.email is string && d.email.size() <= 120))
+        && (!('gender' in d) || str(d.gender, 0, 30))
+        && (!('age' in d) || (d.age is number && d.age >= 0 && d.age <= 150) || (d.age is string && d.age.size() <= 10))
+        && (!('dob' in d) || str(d.dob, 0, 40))
+        && (!('bloodGroup' in d) || str(d.bloodGroup, 0, 20))
+        && d.practiceType in ['ayurveda', 'dental', 'both']
+        && (!('address' in d) || validAddress(d.address))
+        && (!('emergencyContact' in d) || validEmergencyContact(d.emergencyContact))
+        && (!('medicalHistory' in d) || validMedicalHistory(d.medicalHistory))
+        && str(d.status, 1, 30)
+        && d.totalVisits is number && d.totalVisits >= 0
+        && (!('lastVisitDate' in d) || d.lastVisitDate == null || (d.lastVisitDate is string && d.lastVisitDate.size() <= 50) || d.lastVisitDate is timestamp)
+        && d.createdAt is timestamp
+        && d.updatedAt is timestamp
+        && str(d.createdBy, 1, 100)
+        && str(d.updatedBy, 1, 100);
+    }
+
+    function validVitals(m) {
+      return m is map
+        && m.keys().hasOnly(['bp', 'pulse', 'temp', 'weight', 'height', 'bmi', 'rbs', 'spo2'])
+        && (!('bp' in m) || (m.bp is string && m.bp.size() <= 40) || m.bp is number)
+        && (!('pulse' in m) || (m.pulse is string && m.pulse.size() <= 40) || m.pulse is number)
+        && (!('temp' in m) || (m.temp is string && m.temp.size() <= 40) || m.temp is number)
+        && (!('weight' in m) || (m.weight is string && m.weight.size() <= 40) || m.weight is number)
+        && (!('height' in m) || (m.height is string && m.height.size() <= 40) || m.height is number)
+        && (!('bmi' in m) || (m.bmi is string && m.bmi.size() <= 40) || m.bmi is number)
+        && (!('rbs' in m) || (m.rbs is string && m.rbs.size() <= 40) || m.rbs is number)
+        && (!('spo2' in m) || (m.spo2 is string && m.spo2.size() <= 40) || m.spo2 is number);
+    }
+
+    function validOpVisit(d) {
+      return d.keys().hasOnly([
+          'patientId', 'opNumber', 'patientName', 'patientPhone', 'patientAge',
+          'patientGender', 'practiceType', 'visitDate', 'visitTime', 'tokenNumber',
+          'doctorId', 'doctorName', 'chiefComplaints', 'duration', 'vitals',
+          'clinicalExamination', 'provisionalDiagnosis', 'finalDiagnosis',
+          'treatmentGiven', 'investigationsOrdered', 'prescriptionId',
+          'prescriptionItems', 'dietAdvice', 'nextFollowUp', 'consultationFee',
+          'paymentStatus', 'visitStatus', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy'
+        ])
+        && d.keys().hasAll([
+          'patientId', 'opNumber', 'patientName', 'patientPhone', 'practiceType',
+          'visitDate', 'tokenNumber', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy'
+        ])
+        && str(d.patientId, 1, 100)
+        && str(d.opNumber, 1, 50)
+        && str(d.patientName, 1, 100)
+        && d.patientPhone is string && d.patientPhone.size() >= 10 && d.patientPhone.size() <= 15
+        && (!('patientAge' in d) || (d.patientAge is number && d.patientAge >= 0 && d.patientAge <= 150) || (d.patientAge is string && d.patientAge.size() <= 10))
+        && (!('patientGender' in d) || str(d.patientGender, 0, 30))
+        && isPractice(d.practiceType)
+        && str(d.visitDate, 8, 25)
+        && (!('visitTime' in d) || str(d.visitTime, 0, 25))
+        && d.tokenNumber is number && d.tokenNumber >= 1
+        && (!('doctorId' in d) || str(d.doctorId, 0, 80))
+        && (!('doctorName' in d) || str(d.doctorName, 0, 120))
+        && (!('chiefComplaints' in d) || str(d.chiefComplaints, 0, 3000))
+        && (!('duration' in d) || str(d.duration, 0, 100))
+        && (!('vitals' in d) || validVitals(d.vitals))
+        && (!('clinicalExamination' in d) || str(d.clinicalExamination, 0, 3000))
+        && (!('provisionalDiagnosis' in d) || str(d.provisionalDiagnosis, 0, 1000))
+        && (!('finalDiagnosis' in d) || str(d.finalDiagnosis, 0, 1000))
+        && (!('treatmentGiven' in d) || str(d.treatmentGiven, 0, 3000))
+        && (!('investigationsOrdered' in d) || (d.investigationsOrdered is string && d.investigationsOrdered.size() <= 2000) || (d.investigationsOrdered is list && d.investigationsOrdered.size() <= 50))
+        && (!('prescriptionId' in d) || str(d.prescriptionId, 0, 100))
+        && (!('prescriptionItems' in d) || (d.prescriptionItems is list && d.prescriptionItems.size() <= 50))
+        && (!('dietAdvice' in d) || str(d.dietAdvice, 0, 2000))
+        && (!('nextFollowUp' in d) || str(d.nextFollowUp, 0, 50))
+        && (!('consultationFee' in d) || (d.consultationFee is number && d.consultationFee >= 0))
+        && (!('paymentStatus' in d) || str(d.paymentStatus, 1, 30))
+        && (!('visitStatus' in d) || str(d.visitStatus, 1, 30))
+        && d.createdAt is timestamp
+        && d.updatedAt is timestamp
+        && str(d.createdBy, 1, 100)
+        && str(d.updatedBy, 1, 100);
+    }
+
+    function validPrescription(d) {
+      return d.keys().hasOnly([
+          'prescriptionNumber', 'patientId', 'opNumber', 'patientName', 'patientPhone',
+          'patientAge', 'patientGender', 'visitId', 'practiceType', 'doctorId',
+          'doctorName', 'doctorRegNo', 'doctorQualification', 'date', 'diagnosis',
+          'vitalsSummary', 'items', 'generalAdvice', 'followUpDate',
+          'createdAt', 'updatedAt', 'createdBy', 'updatedBy'
+        ])
+        && d.keys().hasAll([
+          'prescriptionNumber', 'patientId', 'opNumber', 'patientName', 'patientPhone',
+          'practiceType', 'date', 'items', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy'
+        ])
+        && str(d.prescriptionNumber, 1, 60)
+        && str(d.patientId, 1, 100)
+        && str(d.opNumber, 1, 50)
+        && str(d.patientName, 1, 100)
+        && d.patientPhone is string && d.patientPhone.size() >= 10 && d.patientPhone.size() <= 15
+        && (!('patientAge' in d) || (d.patientAge is number && d.patientAge >= 0 && d.patientAge <= 150) || (d.patientAge is string && d.patientAge.size() <= 10))
+        && (!('patientGender' in d) || str(d.patientGender, 0, 30))
+        && (!('visitId' in d) || str(d.visitId, 0, 100))
+        && isPractice(d.practiceType)
+        && (!('doctorId' in d) || str(d.doctorId, 0, 80))
+        && (!('doctorName' in d) || str(d.doctorName, 0, 120))
+        && (!('doctorRegNo' in d) || str(d.doctorRegNo, 0, 80))
+        && (!('doctorQualification' in d) || str(d.doctorQualification, 0, 120))
+        && str(d.date, 8, 25)
+        && (!('diagnosis' in d) || str(d.diagnosis, 0, 1500))
+        && (!('vitalsSummary' in d) || (d.vitalsSummary is string && d.vitalsSummary.size() <= 500) || d.vitalsSummary is map)
+        && d.items is list && d.items.size() >= 1 && d.items.size() <= 50
+        && (!('generalAdvice' in d) || str(d.generalAdvice, 0, 2000))
+        && (!('followUpDate' in d) || str(d.followUpDate, 0, 50))
+        && d.createdAt is timestamp
+        && d.updatedAt is timestamp
+        && str(d.createdBy, 1, 100)
+        && str(d.updatedBy, 1, 100);
+    }
+
+    function validMedication(d) {
+      return d.keys().hasOnly([
+          'name', 'genericName', 'practiceType', 'type', 'strength',
+          'defaultDosage', 'defaultFrequency', 'defaultTiming', 'defaultAnupanam',
+          'duration', 'instructions', 'indications', 'stockQuantity', 'unit',
+          'active', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy'
+        ])
+        && d.keys().hasAll([
+          'name', 'practiceType', 'type', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy'
+        ])
+        && str(d.name, 1, 150)
+        && (!('genericName' in d) || str(d.genericName, 0, 200))
+        && d.practiceType in ['ayurveda', 'dental', 'both']
+        && str(d.type, 1, 60)
+        && (!('strength' in d) || str(d.strength, 0, 60))
+        && (!('defaultDosage' in d) || str(d.defaultDosage, 0, 100))
+        && (!('defaultFrequency' in d) || str(d.defaultFrequency, 0, 60))
+        && (!('defaultTiming' in d) || str(d.defaultTiming, 0, 60))
+        && (!('defaultAnupanam' in d) || str(d.defaultAnupanam, 0, 150))
+        && (!('duration' in d) || str(d.duration, 0, 60))
+        && (!('instructions' in d) || str(d.instructions, 0, 1000))
+        && (!('indications' in d) || str(d.indications, 0, 1000))
+        && (!('stockQuantity' in d) || (d.stockQuantity is number && d.stockQuantity >= 0))
+        && (!('unit' in d) || str(d.unit, 0, 40))
+        && (!('active' in d) || d.active is bool)
+        && d.createdAt is timestamp
+        && d.updatedAt is timestamp
+        && str(d.createdBy, 1, 100)
+        && str(d.updatedBy, 1, 100);
     }
 
     // ------------------------------------------------------------------ users
@@ -195,6 +511,67 @@ service cloud.firestore {
           get(/databases/$(database)/documents/appointments/$(id)).data.practiceType);
         allow update, delete: if false;
       }
+    }
+
+    // ------------------------------------------------------------- patients
+    match /patients/{id} {
+      allow read: if canStaffPractice(resource.data.practiceType);
+      allow create: if canStaffPractice(request.resource.data.practiceType)
+        && validPatient(request.resource.data);
+      allow update: if canStaffPractice(resource.data.practiceType)
+        && canStaffPractice(request.resource.data.practiceType)
+        && validPatient(request.resource.data)
+        && unchanged('createdAt')
+        && unchanged('createdBy')
+        && unchanged('opNumber')
+        && (!('patientId' in resource.data) || unchanged('patientId'));
+      allow delete: if isSuper();
+    }
+
+    // ------------------------------------------------------------- opVisits
+    match /opVisits/{id} {
+      allow read: if canPractice(resource.data.practiceType);
+      allow create: if canPractice(request.resource.data.practiceType)
+        && validOpVisit(request.resource.data);
+      allow update: if canPractice(resource.data.practiceType)
+        && canPractice(request.resource.data.practiceType)
+        && validOpVisit(request.resource.data)
+        && unchanged('createdAt')
+        && unchanged('createdBy')
+        && unchanged('patientId')
+        && unchanged('opNumber')
+        && unchanged('practiceType');
+      allow delete: if isSuper();
+    }
+
+    // -------------------------------------------------------- prescriptions
+    match /prescriptions/{id} {
+      allow read: if canPractice(resource.data.practiceType);
+      allow create: if canPractice(request.resource.data.practiceType)
+        && validPrescription(request.resource.data);
+      allow update: if canPractice(resource.data.practiceType)
+        && canPractice(request.resource.data.practiceType)
+        && validPrescription(request.resource.data)
+        && unchanged('createdAt')
+        && unchanged('createdBy')
+        && unchanged('patientId')
+        && unchanged('opNumber')
+        && unchanged('prescriptionNumber')
+        && unchanged('practiceType');
+      allow delete: if isSuper();
+    }
+
+    // ---------------------------------------------------------- medications
+    match /medications/{id} {
+      allow read: if isActiveStaff();
+      allow create: if canStaffPractice(request.resource.data.practiceType)
+        && validMedication(request.resource.data);
+      allow update: if canStaffPractice(resource.data.practiceType)
+        && canStaffPractice(request.resource.data.practiceType)
+        && validMedication(request.resource.data)
+        && unchanged('createdAt')
+        && unchanged('createdBy');
+      allow delete: if canStaffPractice(resource.data.practiceType);
     }
 
     // ------------------------------------------------ store: categories/products
